@@ -2,16 +2,18 @@
 #include<stdlib.h>
 typedef struct AdjVNode *edge;
 typedef int Vertex;
+typedef struct Vnode{
+    int number;
+    int known;
+    edge FirstEdge;
+}*AdjList;
 struct AdjVNode{
     Vertex AdjV;
     int weighted;
     edge Next;
 };
 
-typedef struct Vnode{
-    int number;
-    edge FirstEdge;
-}*AdjList;
+
 typedef struct GNode *PtrToGNode;
 struct GNode{
     int Nv;
@@ -21,48 +23,78 @@ struct GNode{
 };
 typedef PtrToGNode LGraph;
 LGraph create(int *Sp);
-edge findLastedge(edge a);
+void Print(LGraph graph);
 int main() {
     int Sp;
     LGraph graph=create(&Sp);
-    printf("%d%d",graph->Nv,Sp);
+    Print(graph);
     return 0;
 }
 LGraph create(int *Sp)
 {
     LGraph  graph;
     graph=(LGraph)malloc(sizeof(struct GNode));
-    graph->G=(AdjList)malloc((graph->Nv+1)*sizeof(struct Vnode));
+
     scanf("%d%d%d%d",&graph->Cmax,&graph->Nv,Sp,&graph->Ne);
+    graph->G=(AdjList)malloc((graph->Nv+1)*sizeof(struct Vnode));
     int i;
+    graph->G[0].FirstEdge=NULL;
+    graph->G[0].number=1000;
+    graph->G[0].known=0;
     for(i=1;i<=graph->Nv;i++)
     {
         scanf("%d",&graph->G[i].number);
         graph->G[i].FirstEdge=NULL;
+        graph->G[i].known=0;
     }
     for(i=0;i<graph->Ne;i++)
     {
         edge temp;
         int Si,Sj,Tij;
         scanf("%d%d%d",&Si,&Sj,&Tij);
-        if(graph->G[Si].FirstEdge==NULL)
-        {
-            graph->G[Si].FirstEdge=(edge)malloc(sizeof(struct AdjVNode));
-            graph->G[Si].FirstEdge->Next=NULL;
-            temp=graph->G[Si].FirstEdge;
-        }else
-        {
-            temp=findLastedge(graph->G[Si].FirstEdge);
-        }
-
+        temp=(edge)malloc(sizeof(struct AdjVNode));
+        temp->Next=NULL;
         temp->AdjV=Sj;
         temp->weighted=Tij;
-        temp->Next=graph->G[Sj].FirstEdge;
+        if(graph->G[Si].FirstEdge==NULL)
+        {
+            graph->G[Si].FirstEdge=temp;
+        }else
+        {
+            edge t=graph->G[Si].FirstEdge;
+            while(t->Next)t=t->Next;
+            t->Next=temp;
+        }
+        temp=(edge)malloc(sizeof(struct AdjVNode));
+        temp->Next=NULL;
+        temp->AdjV=Si;
+        temp->weighted=Tij;
+        if(graph->G[Sj].FirstEdge==NULL)
+        {
+            graph->G[Sj].FirstEdge=temp;
+        }else
+        {
+            edge t=graph->G[Sj].FirstEdge;
+            while(t->Next)t=t->Next;
+            t->Next=temp;
+        }
+
     }
     return graph;
 }
-edge findLastedge(edge a)
+
+void Print(LGraph graph)
 {
-    while(a->Next)a=a->Next;
-    return a;
+
+    int i;
+    for(i=0;i<=graph->Nv;i++)
+    {
+        edge temp=graph->G[i].FirstEdge;
+        printf("numberof bike:%d\n",graph->G[i].number);
+        while(temp)
+        {
+            printf("next edge:%d,time:%d \n",temp->AdjV,temp->weighted);
+            temp=temp->Next;
+        }
+    }
 }
