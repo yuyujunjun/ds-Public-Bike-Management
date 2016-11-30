@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #define MaxVNodeNum 501
 #define INFINITY 100000
-int Gsent=INFINITY;
+int Gsent=INFINITY;//定义最优的sent的初始值，不影响后续判断
 int Gback=INFINITY;
 typedef struct AdjVNode *edge;//声明边
 typedef int Vertex;
@@ -56,7 +56,7 @@ int main() {
     for(i--;i>=0;i--)
     	printf("->%d",Gpath[i]);//打印除了初始节点以外的其余结点
     printf(" %d",Gback);//打印最优back
-   // Print(graph);
+   //Print(graph);
     return 0;
 }
 //创建图的函数
@@ -72,7 +72,7 @@ LGraph create(int *Sp)
     graph->G[0].number=INFINITY;
     graph->G[0].known=0;
     graph->G[0].dist=0;//让第一个节点的dist为0
-    for(int j=0;j<graph->Nv;j++)graph->G[0].path[j]=-1;
+    for(int j=0;j<graph->Nv+1;j++)graph->G[0].path[j]=-1;
 
     for(i=1;i<=graph->Nv;i++)//初始化后续结点
     {
@@ -81,10 +81,10 @@ LGraph create(int *Sp)
         graph->G[i].known=0;
         graph->G[i].dist=INFINITY;//令后续的结点的dist为无限
        // graph->G[i].count=0;
-        for(int j=0;j<graph->Nv;j++)graph->G[i].path[j]=-1;
+        for(int j=0;j<graph->Nv+1;j++)graph->G[i].path[j]=-1;
     }
     //-----------处理每一个结点的邻接信息------------
-    for(i=0;i<graph->Ne;i++)//对结点进行遍历
+    for(i=1;i<=graph->Ne;i++)//对结点进行遍历
     {
         edge temp;
         int Si,Sj,Tij;//Si为源结点，Sj为目标结点，Tij为两者之前路线所用时间
@@ -143,7 +143,7 @@ void ShortestDist( LGraph graph)//利用算法获取最优边
         int MinDist = INFINITY - 1;//初始化最优的距离为初始dist-1
         int index = 0;
         int flag = 0;//用以判断是否还存在结点没有确定下来
-        for (i = 0; i < graph->Nv; i++)//找到没有确定下来的结点中距离最小的一个
+        for (i = 0; i < graph->Nv+1; i++)//找到没有确定下来的结点中距离最小的一个
         {
             //count[i]=0;
             if (graph->G[i].dist < MinDist && graph->G[i].known == 0) {
@@ -165,16 +165,19 @@ void ShortestDist( LGraph graph)//利用算法获取最优边
                 {
                     graph->G[temp->AdjV].dist = graph->G[index].dist + temp->weighted;
                     graph->G[temp->AdjV].pathIndex = 0;//如果已经重新确定了最新距离，则它的最短路径应该重新规划
-                    for (int j = 0; j < graph->Nv; j++)graph->G[temp->AdjV].path[j] = -1;//重新规划最短路径
+                    for (int j = 0; j < graph->Nv+1; j++)graph->G[temp->AdjV].path[j] = -1;//重新规划最短路径
                     //graph->G[temp->AdjV].count=graph->G[index].count;
                     //count[temp->AdjV]=count[index];
+                    graph->G[temp->AdjV].path[graph->G[temp->AdjV].pathIndex] = index;//填入最短路径
                 } else if (graph->G[index].dist + temp->weighted == graph->G[temp->AdjV].dist)
                 {
                     graph->G[temp->AdjV].pathIndex++;//如果有多条相同的最短路径，则需要填入另外的空间中
                     // graph->G[temp->AdjV].count+=graph->G[index].count;
                     //count[temp->AdjV]+=count[index];
+                    graph->G[temp->AdjV].path[graph->G[temp->AdjV].pathIndex] = index;//填入最短路径
                 }
-            graph->G[temp->AdjV].path[graph->G[temp->AdjV].pathIndex] = index;//填入最短路径
+
+
         }
     }
 }
@@ -208,6 +211,7 @@ void Dfs(LGraph graph,int *Gpath,int *path,int sent,int back,int id)//dfs算法�
 				}
 			}
 		}
+
 		for(int i=0;visited[graph->G[id].path[i]]==0&&graph->G[id].path[i]!=-1;i++)//依次遍历该节点所对应的所有路径
 		{
 			Dfs(graph,Gpath,path,sent,back,graph->G[id].path[i]);//深度优先算法，继续下一个位置的节点
