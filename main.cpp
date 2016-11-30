@@ -4,6 +4,7 @@ typedef struct AdjVNode *edge;
 typedef int Vertex;
 struct AdjVNode{
     Vertex AdjV;
+    int weighted;
     edge Next;
 };
 
@@ -20,6 +21,7 @@ struct GNode{
 };
 typedef PtrToGNode LGraph;
 LGraph create(int *Sp);
+edge findLastedge(edge a);
 int main() {
     int Sp;
     LGraph graph=create(&Sp);
@@ -36,6 +38,31 @@ LGraph create(int *Sp)
     for(i=1;i<=graph->Nv;i++)
     {
         scanf("%d",&graph->G[i].number);
+        graph->G[i].FirstEdge=NULL;
+    }
+    for(i=0;i<graph->Ne;i++)
+    {
+        edge temp;
+        int Si,Sj,Tij;
+        scanf("%d%d%d",&Si,&Sj,&Tij);
+        if(graph->G[Si].FirstEdge==NULL)
+        {
+            graph->G[Si].FirstEdge=(edge)malloc(sizeof(struct AdjVNode));
+            graph->G[Si].FirstEdge->Next=NULL;
+            temp=graph->G[Si].FirstEdge;
+        }else
+        {
+            temp=findLastedge(graph->G[Si].FirstEdge);
+        }
+
+        temp->AdjV=Sj;
+        temp->weighted=Tij;
+        temp->Next=graph->G[Sj].FirstEdge;
     }
     return graph;
+}
+edge findLastedge(edge a)
+{
+    while(a->Next)a=a->Next;
+    return a;
 }
